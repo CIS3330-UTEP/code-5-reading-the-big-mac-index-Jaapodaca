@@ -1,28 +1,31 @@
-import pandas as pd 
-df = pd.read_csv("./big-mac-full-index.csv")
+import pandas as pd
+big_mac_file = './big-mac-full-index.csv'
+df = pd.read_csv(big_mac_file)
 
-# print(type(df ["date"][0]))
+df['year'] = pd.to_datetime(df['date']).dt.year
 
-# query = "date >= '2018-01-02'"
-# df = df.query(query)
+def get_big_mac_price_by_year(year,country_code):
+    country_code = country_code.upper()
+    data = df[(df['year'] == year) & (df['iso_a3'] == country_code)]
+    return round(data['dollar_price'].mean(), 2)
 
-# print(df)
+def get_big_mac_price_by_country(country_code):
+    country_code = country_code.upper()
+    data = df[df['iso_a3'] == country_code]
+    return round(data['dollar_price'].mean(), 2) 
 
-# file_name = "./big-mac-full-index.csv"
-# df = pd.read_csv(file_name)
+def get_the_cheapest_big_mac_price_by_year(year):
+    data = df[df['year'] == year]
+    cheapest = data.nsmallest(1, 'dollar_price')[['name', 'iso_a3', 'dollar_price']].values[0]
+    return f"{cheapest[0]}({cheapest[1]}): ${cheapest[2]}"
 
-# for idx, row in df.iterrows():
-#     if row['dollar_price'] < 1:
-#         print(row['dollar_price'])
+def get_the_most_expensive_big_mac_price_by_year(year):
+    data = df[df['year'] == year]
+    most_expensive = data.nlargest(1, 'dollar_price')[['name', 'iso_a3', 'dollar_price']].values[0]
+    return f"{most_expensive[0]}({most_expensive[1]}): ${most_expensive[2]}"
 
-# smol_df = df.query("index < 10")
-
-# def get_new_country_name(row):
-#     new_country_name = f'{row['name']} ({row['iso_a3"]})']})'
-#     return new_country_name
-
-# smol_df['name'] = smol_df.apply(get_new_country_name, axis=1)
-# print(smol_df)
-
-file_name = "./big-mac-full-index.csv"
-df = pd.read_csv(file_name)
+if __name__ == "__main__":
+    print(get_big_mac_price_by_year(2010, 'jpn'))
+    print(get_big_mac_price_by_country('JPN'))
+    print(get_the_cheapest_big_mac_price_by_year(2015))
+    print(get_the_most_expensive_big_mac_price_by_year(2015))
